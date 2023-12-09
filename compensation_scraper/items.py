@@ -6,7 +6,16 @@
 import scrapy
 
 
-class CompensationScraperItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+class CaseItem(scrapy.Item):
+    case_number = scrapy.Field()
+    case_name = scrapy.Field()
+    judge = scrapy.Field()
+    mediator = scrapy.Field()
+    carrier = scrapy.Field()
+    accident_date = scrapy.Field()
+    date_assigned = scrapy.Field()
+    district = scrapy.Field()
+    county = scrapy.Field()
+    docket_data = scrapy.Field()
+    schedule = scrapy.Field()
+    pfbs = scrapy.Field()

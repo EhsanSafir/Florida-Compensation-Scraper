@@ -12,7 +12,7 @@ This Scrapy project is designed to scrape Florida compensation claims data from 
 1. Clone the repository:
 
     ```bash
-    git clone <repository-url>
+    git clone git@github.com:EhsanSafir/Florida-Compensation-Scraper.git
     cd <repository-directory>
     ```
 

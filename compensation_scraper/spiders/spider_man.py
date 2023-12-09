@@ -8,8 +8,6 @@ from ..selinum_utils import start_selenium_to_create_session
 
 class ResultSpider(scrapy.Spider):
     pagination_url_template = "https://www.jcc.state.fl.us/JCC/searchJCC/searchDisplay.asp?pc=%s"
-    start_page = 1
-    end_page = 1
     name = "spider"
     custom_settings = {
         'ROBOTSTXT_OBEY': False,
@@ -19,6 +17,8 @@ class ResultSpider(scrapy.Spider):
     def start_requests(self):
         # Create a CookieJar to manage cookies
         self._cookie = start_selenium_to_create_session()
+        self.start_page = int(getattr(self, 'start_page', 1))
+        self.end_page = int(getattr(self, 'end_page', 50))
         url = self.pagination_url_template % self.start_page
         yield scrapy.Request(url=url, callback=self.parse, cookies=self._cookie)
 
@@ -43,12 +43,17 @@ class ResultSpider(scrapy.Spider):
             yield scrapy.Request(url=next_page_url, callback=self.parse)
 
     def _specific_case_parser(self, response):
-        is_applicable_case, docket_data = self._docket_tab_parser(response)
+        # parse the result page items
 
+        is_applicable_case, docket_data = self._docket_tab_parser(response)
+        print("[x] Docket Tab extracted")
         if is_applicable_case:
             summery_data = self._case_summery_parser(response)
+            print("[x] Case Summery Info Extracted")
             schedule = self.schedule_tab_parser(response)
+            print("[x] Case schedule Info Extracted")
             pfbs = self.pfbs_tab_parser(response)
+            print("[x] Case pfbs Info Extracted")
             data_item = {
                 **summery_data,
                 'docket_data': docket_data,
@@ -56,6 +61,7 @@ class ResultSpider(scrapy.Spider):
                 'pfbs': pfbs
             }
             item = CaseItem(**data_item)
+            print("[x] Case pfbs Info Extracted")
             yield item
 
     def _case_summery_parser(self, response):
@@ -86,7 +92,6 @@ class ResultSpider(scrapy.Spider):
             date = row.css('td:nth-child(2)::text').get()
             proceedings = row.css('td:nth-child(3)::text').get().strip()
             if proceedings in ['Settlement Order- Represented', 'Settlement Order- Pro Se']:
-                print('Found')
                 is_applicable_case = True
             tables_row.append({'PDF': pdf_link, 'Date': date, 'proceedings': proceedings})
         return is_applicable_case, tables_row
